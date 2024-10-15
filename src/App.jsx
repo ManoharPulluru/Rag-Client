@@ -26,7 +26,7 @@ const App = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:5000/ask_query", {
+      const response = await axios.post("https://manohar-rag-server.onrender.com/ask_query", {
         query: input,
       });
       // Add the response from the bot to the conversation
