@@ -8,34 +8,47 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const endOfMessagesRef = useRef(null);
 
+  // Handles the input change for the text input field
   const handleInputChange = (e) => {
     setInput(e.target.value);
   };
 
+  // Handles form submission (sending the query)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input) return;
 
-    setResponses((prevResponses) => [...prevResponses, { user: input, bot: "" }]);
+    setResponses((prevResponses) => [
+      ...prevResponses,
+      { user: input, bot: "" },
+    ]);
 
     setLoading(true);
 
     try {
-      const response = await axios.post("https://manohar-rag-server.onrender.com/ask_query", { query: input });
+      const response = await axios.post("http://localhost:5000/ask_query", {
+        query: input,
+      });
+      // Add the response from the bot to the conversation
       setResponses((prevResponses) => {
         const newResponses = [...prevResponses];
         newResponses[newResponses.length - 1].bot = response.data.response;
         return newResponses;
       });
-      setInput("");
+      setInput(""); // Clear input after submission
     } catch (error) {
       console.error("Error sending query:", error);
-      setResponses((prevResponses) => [...prevResponses, { user: input, bot: "Error: Unable to get response" }]);
+      // Add an error message if something goes wrong
+      setResponses((prevResponses) => [
+        ...prevResponses,
+        { user: input, bot: "Error: Unable to get response" },
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
+  // Scroll to the bottom of the chat window automatically when a new message is added
   useEffect(() => {
     if (endOfMessagesRef.current) {
       endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
@@ -51,12 +64,12 @@ const App = () => {
             <div className="message">
               {response.user && (
                 <div className="user-message">
-                  <strong></strong> {response.user}
+                  <strong>User:</strong> {response.user}
                 </div>
               )}
               {response.bot && (
                 <div className="bot-message">
-                  <strong></strong> {response.bot}
+                  <strong>Bot:</strong> {response.bot}
                 </div>
               )}
             </div>
@@ -65,7 +78,14 @@ const App = () => {
         <div ref={endOfMessagesRef} />
       </div>
       <form onSubmit={handleSubmit} className="form">
-        <input type="text" value={input} onChange={handleInputChange} placeholder="Type your message..." className="input" disabled={loading} />
+        <input
+          type="text"
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Type your message..."
+          className="input"
+          disabled={loading}
+        />
         <button type="submit" className="button" disabled={loading}>
           {loading ? "Thinking..." : "Send"}
         </button>
